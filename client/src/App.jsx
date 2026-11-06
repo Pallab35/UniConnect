@@ -36,20 +36,56 @@ function Logo() {
   );
 }
 
+const FEATS = [
+  ['Skill-based matching', 'Find teammates with the skills your project needs.', <><circle cx="9" cy="8" r="3.5" /><path d="M2.5 20a6.5 6.5 0 0 1 13 0M16 4.6a3.5 3.5 0 0 1 0 6.8M21.5 20a6.5 6.5 0 0 0-4-6" /></>],
+  ['Campus events & teams', 'Discover events and form teams in one tap.', <path d="M4 6h16v14H4zM4 10h16M8 3v4M16 3v4" />],
+  ['Academic help', 'Ask course questions and get verified answers.', <><circle cx="12" cy="12" r="9" /><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01" /></>],
+  ['Smart lost & found', 'AI-assisted matching to get your things back.', <><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></>],
+];
+
 function Auth({ onAuth }) {
-  const [reg, setReg] = useState(false), [f, setF] = useState({}), [err, setErr] = useState('');
+  const [reg, setReg] = useState(false), [f, setF] = useState({}), [err, setErr] = useState(''), [show, setShow] = useState(false);
   const set = (k) => (e) => setF({ ...f, [k]: e.target.value });
+  const switchTo = (r) => { setReg(r); setErr(''); };
   const go = async (e) => { e.preventDefault(); setErr(''); try { const d = await api(reg ? '/auth/register' : '/auth/login', 'POST', f); localStorage.token = d.token; onAuth(d.user); } catch (x) { setErr(x.message); } };
   return (
-    <form className="auth card" onSubmit={go}>
-      <h1><Logo /></h1><p className="mute">Your campus, in one place.</p>
-      {reg && <><input placeholder="Full name" onChange={set('name')} /><input placeholder="Username" onChange={set('username')} /><input type="email" placeholder="University email" onChange={set('email')} /></>}
-      {!reg && <input placeholder="Email or username" onChange={set('login')} />}
-      <input type="password" placeholder="Password (6+ characters)" onChange={set('password')} />
-      {err && <p className="err">{err}</p>}
-      <button className="primary" style={{ width: '100%' }}>{reg ? 'Create account' : 'Log in'}</button>
-      <p className="mute"><button type="button" className="link" onClick={() => setReg(!reg)}>{reg ? 'Have an account? Log in' : 'New here? Create an account'}</button></p>
-    </form>
+    <div className="authpage">
+      <section className="hero">
+        <span className="pill"><Logo /></span>
+        <h1>Your campus, connected.</h1>
+        <p className="lead">A social network built only for university students – share, collaborate and stay in the loop.</p>
+        <ul className="feats">{FEATS.map(([t, d, icon]) => <li key={t}><span className="ficon"><Ic size={22}>{icon}</Ic></span><div><b>{t}</b><span>{d}</span></div></li>)}</ul>
+      </section>
+      <section className="formside">
+        <form className="authcard" onSubmit={go}>
+          <div className="seg">
+            <button type="button" className={!reg ? 'on' : ''} onClick={() => switchTo(false)}>Log in</button>
+            <button type="button" className={reg ? 'on' : ''} onClick={() => switchTo(true)}>Sign up</button>
+          </div>
+          <h2>{reg ? 'Create your account' : 'Welcome back'}</h2>
+          <p className="mute">{reg ? 'Join your university community.' : 'Log in with your university account.'}</p>
+          {reg && <>
+            <label>Full name<input placeholder="Your full name" onChange={set('name')} /></label>
+            <label>Username<input placeholder="Pick a username" onChange={set('username')} /></label>
+            <label>University email<input type="email" placeholder="you@university.edu" onChange={set('email')} /></label>
+          </>}
+          {!reg && <label>Email or username<input placeholder="you@university.edu" onChange={set('login')} /></label>}
+          <label>Password
+            <div className="pw">
+              <input type={show ? 'text' : 'password'} placeholder={reg ? 'At least 6 characters' : 'Enter your password'} onChange={set('password')} />
+              <button type="button" className="eye" aria-label={show ? 'Hide password' : 'Show password'} onClick={() => setShow(!show)}>
+                <Ic size={20}><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z" /><circle cx="12" cy="12" r="3" /></Ic>
+              </button>
+            </div>
+          </label>
+          {err && <p className="err">{err}</p>}
+          <button className="primary">{reg ? 'Create account' : 'Log in'}</button>
+          <div className="or">or</div>
+          <button type="button" className="google" disabled title="Google sign-in is coming soon"><b>G</b> Continue with Google</button>
+          <p className="mute swap">{reg ? 'Already have an account? ' : 'New to UniConnect? '}<button type="button" className="link" onClick={() => switchTo(!reg)}>{reg ? 'Log in' : 'Create an account'}</button></p>
+        </form>
+      </section>
+    </div>
   );
 }
 
